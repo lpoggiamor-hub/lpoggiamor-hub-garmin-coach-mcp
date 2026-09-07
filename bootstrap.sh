@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 PROJECT_NAME="${PROJECT_NAME:-garmin-coach-mcp}"
 SERVICE_NAME="${SERVICE_NAME:-garmin-coach-mcp}"
-CACHE_MINUTES="${CACHE_MINUTES:-30}"
-ACTIVITY_LIMIT="${ACTIVITY_LIMIT:-8}"
+CACHE_MINUTES="${CACHE_MINUTES:-10}"
+ACTIVITY_LIMIT="${ACTIVITY_LIMIT:-20}"
 MOUNT_PATH="${MOUNT_PATH:-/data}"
 TOKEN_FILE="${HOME}/.garminconnect/garmin_tokens.json"
 
@@ -14,7 +14,7 @@ need_file() {
 
 echo "== Garmin Coach MCP · bootstrap =="
 
-for f in requirements.txt server.py Dockerfile railway.toml login_once.py; do
+for f in requirements.txt server.py secure_server.py Dockerfile railway.toml login_once.py; do
   need_file "$f"
 done
 
@@ -23,9 +23,9 @@ if ! command -v brew >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v python3.11 >/dev/null 2>&1; then
-  echo "→ Instalando python@3.11..."
-  brew install python@3.11
+if ! command -v python3.12 >/dev/null 2>&1; then
+  echo "→ Instalando python@3.12..."
+  brew install python@3.12
 fi
 
 if ! command -v railway >/dev/null 2>&1; then
@@ -35,7 +35,7 @@ fi
 
 if [[ ! -d .venv ]]; then
   echo "→ Creando entorno virtual..."
-  python3.11 -m venv .venv
+  python3.12 -m venv .venv
 fi
 
 source .venv/bin/activate
@@ -90,7 +90,7 @@ railway volume add -m "$MOUNT_PATH" || true
 echo
 echo "→ Guardando variables..."
 printf "%s" "$TOKEN_B64" | railway variable set GARMIN_TOKENS_JSON --stdin
-railway variable set CACHE_MINUTES="$CACHE_MINUTES" ACTIVITY_LIMIT="$ACTIVITY_LIMIT"
+railway variable set CACHE_MINUTES="$CACHE_MINUTES" ACTIVITY_LIMIT="$ACTIVITY_LIMIT" GARMIN_TIMEZONE="America/Santiago" GARMIN_LANGUAGE="es" AUTO_SYNC_TOKENS="1" AUTO_SYNC_INTERVAL_SECONDS="43200" MCP_READ_ONLY="1"
 
 echo
 echo "→ Desplegando..."

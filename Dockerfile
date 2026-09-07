@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -9,8 +9,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY server.py .
+COPY server.py secure_server.py .
 
 RUN mkdir -p /data
 
-CMD ["python", "server.py"]
+CMD ["python", "secure_server.py"]

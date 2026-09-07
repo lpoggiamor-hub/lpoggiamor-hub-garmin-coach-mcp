@@ -8653,7 +8653,9 @@ def get_activity_evaluation(activity_id: str) -> dict:
     """
     with FETCH_LOCK:
         api = _get_api()
-        data, err = _optional_call_first(api, ("get_activity_evaluation",), activity_id)
+        data, err = _optional_call_first(
+            api, ("get_activity_evaluation", "get_activity"), activity_id
+        )
 
     if data is None:
         raise RuntimeError(err or f"No se pudo obtener la evaluación de la actividad {activity_id}")
@@ -9252,7 +9254,9 @@ def get_scheduled_workouts(year: int = None, month: int = None) -> dict:
         api = _get_api()
         try:
             # Intentar con el método de la librería si existe, si no usar connectapi
-            if hasattr(api, "get_workouts_calendar"):
+            if hasattr(api, "get_scheduled_workouts"):
+                data = api.get_scheduled_workouts(y, m)
+            elif hasattr(api, "get_workouts_calendar"):
                 data = api.get_workouts_calendar(y, m)
             else:
                 data = api.connectapi(f"/calendar-service/year/{y}/month/{m - 1}")
@@ -9279,7 +9283,9 @@ def get_todays_workout() -> dict:
     with FETCH_LOCK:
         api = _get_api()
         try:
-            if hasattr(api, "get_workouts_calendar"):
+            if hasattr(api, "get_scheduled_workouts"):
+                data = api.get_scheduled_workouts(today.year, today.month)
+            elif hasattr(api, "get_workouts_calendar"):
                 data = api.get_workouts_calendar(today.year, today.month)
             else:
                 data = api.connectapi(f"/calendar-service/year/{today.year}/month/{today.month - 1}")
